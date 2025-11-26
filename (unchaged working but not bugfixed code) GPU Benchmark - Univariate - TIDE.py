@@ -39,8 +39,7 @@ cwd = r"C:\Users\Administrator\Desktop\Thesis\1. Code"
 input_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
 
 dataname = os.path.splitext(os.path.basename(input_path))[0]
-# output_path = os.path.join(cwd, "results", "results_" + dataname + "22.json")
-output_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\1. Code\results\results_test_multivariate__pts_per_period_100__periods_12.json22.json"
+output_path = os.path.join(cwd, "results", "results_" + dataname + "22.json")
 dataname = dataname.replace("test", "train")
 hyperparameter_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\1. Code\hyperparameters\hyperparameters_multivariate_train_multivariate__pts_per_period_100__periods_12.json"
 
@@ -185,9 +184,6 @@ for equation_name in attractor_list:
         else:
             n_steps, n_dims = y_train.shape
 
-        # List to collect predictions from each dimension (x, y, z)
-        all_dims_preds = []
-
         for d in range(n_dims):
             # Select one series
             y_train_series = y_train[:, d] if n_dims > 1 else y_train
@@ -214,105 +210,43 @@ for equation_name in attractor_list:
 
             # Predict safely
             fcst = model.predict()
-            if model_name in fcst.columns:
-                y_val_pred = fcst[model_name].values
-            else:
-                y_val_pred = fcst.get('y_hat') or fcst.get('y') or np.array([None] * len(y_val))
-            
-            # Ensure prediction is a list/array and not a pandas Series for consistency
-            if hasattr(y_val_pred, 'values'):
-                y_val_pred = y_val_pred.values
+            y_val_pred = fcst.get('y_hat') or fcst.get('y') or np.array([None] * len(y_val))
 
-            # =======================================================
-            # Metrics & Save
-            # =======================================================
-            
-            # 1. Get the ground truth specifically for this dimension
-            y_val_dim = y_val[:, d] if n_dims > 1 else y_val
-            
-            # 2. Compute metrics
-            try:
-                # Ensure we compare arrays of the same length
-                min_len = min(len(y_val_dim), len(y_val_pred))
-                
-                # Prepare inputs: dysts expects (N, D) shapes, reshape if 1D
-                y_true_in = y_val_dim[:min_len]
-                if y_true_in.ndim == 1:
-                    y_true_in = y_true_in.reshape(-1, 1)
-                
-                y_pred_in = y_val_pred[:min_len]
-                if y_pred_in.ndim == 1:
-                    y_pred_in = y_pred_in.reshape(-1, 1)
-
-                all_metrics = dysts.metrics.compute_metrics(y_true_in, y_pred_in)
-            except Exception as e:
-                print(f"Metrics failed for dim {d}: {e}")
-                
-                # Dummy calculation with reshaped input
-                y_dummy = y_val_dim
-                if y_dummy.ndim == 1:
-                    y_dummy = y_dummy.reshape(-1, 1)
-                    
-                all_metrics = dysts.metrics.compute_metrics(y_dummy, y_dummy) # dummy
-                for key in all_metrics:
-                    all_metrics[key] = None
-
-                # 3. Save predictions and metrics
-                if n_dims > 1:
-                    key = f"{model_name}_dim{d}"
-                    all_results[equation_name][key] = {"prediction": y_val_pred.tolist()}
-                    all_results[equation_name][key].update(all_metrics)
-                else:
-                    all_results[equation_name][model_name] = {"prediction": y_val_pred.tolist()}
-                    all_results[equation_name][model_name].update(all_metrics)
-
-                # Collect this dimension's prediction for the final combined result
-                all_dims_preds.append(y_val_pred)
-
-                # Save incrementally
-                with open(output_path, 'w') as f:
-                    json.dump(all_results, f, indent=4)
-
-        # =======================================================
-        # Combine predictions from (X, Y, Z) into one matrix
-        # =======================================================
-        
-        # Stack the lists: [pred_x, pred_y, pred_z] -> matrix (N, 3)
-        if len(all_dims_preds) > 0:
-            # Ensure all are same length before stacking
-            min_len = min(len(p) for p in all_dims_preds)
-            all_dims_preds = [p[:min_len] for p in all_dims_preds]
-            
+            # Save predictions
             if n_dims > 1:
-                y_val_pred_combined = np.column_stack(all_dims_preds)
+                all_results[equation_name][f"{model_name}_dim{d}"] = {"prediction": y_val_pred.tolist()}
             else:
-                y_val_pred_combined = all_dims_preds[0]
-        else:
-            y_val_pred_combined = np.array([])
-
-        # Save the COMBINED prediction (contains x, y, z)
-        all_results[equation_name][model_name]["prediction"] = y_val_pred_combined.tolist()
+                all_results[equation_name][model_name] = {"prediction": y_val_pred.tolist()}
 
 
         # =======================================================
-        # Metrics (Multivariate)
+        # Train
+        # =======================================================
+        model.fit(df_train)
+
+
+        # =======================================================
+        # Predict
         # =======================================================
         try:
-            # Align ground truth length
-            y_true_final = y_val[:len(y_val_pred_combined)]
-            
-            # Ensure shapes match for metrics calculation
-            if y_true_final.ndim == 1 and y_val_pred_combined.ndim == 1:
-                y_true_final = y_true_final.reshape(-1, 1)
-                y_val_pred_combined = y_val_pred_combined.reshape(-1, 1)
-
-            all_metrics = dysts.metrics.compute_metrics(y_true_final, y_val_pred_combined)
+            fcst = model.predict()
+            y_val_pred = fcst['y_hat'].values[:len(y_val)]
         except Exception as e:
-            print(f"Combined metrics failed: {e}")
-            y_dummy = y_val
-            if y_dummy.ndim == 1: y_dummy = y_dummy.reshape(-1, 1)
-            all_metrics = dysts.metrics.compute_metrics(y_dummy, y_dummy)
-            for key in all_metrics: all_metrics[key] = None
+            print(f"Failed to predict {equation_name} {model_name}: {e}")
+            y_val_pred = np.array([None] * len(y_val))
+
+        all_results[equation_name][model_name]["prediction"] = y_val_pred.tolist()
+
+
+        # =======================================================
+        # Metrics
+        # =======================================================
+        try:
+            all_metrics = dysts.metrics.compute_metrics(y_val, y_val_pred)
+        except ValueError:
+            all_metrics = dysts.metrics.compute_metrics(y_val, y_val)
+            for key in all_metrics:
+                all_metrics[key] = None
 
         all_results[equation_name][model_name].update(all_metrics)
 
