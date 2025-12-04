@@ -318,7 +318,7 @@ for attractor in attractor_list:
         y_true_future = test_future[:, d] if n_dims > 1 else test_future
 
         df_train = pd.DataFrame({
-            "unique_id": 0,
+            "uniGITque_id": 0,
             "ds": np.arange(len(y_train_series)),
             "y": y_train_series
         })
