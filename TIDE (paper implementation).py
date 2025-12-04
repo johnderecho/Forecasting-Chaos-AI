@@ -58,6 +58,10 @@ torch.manual_seed(RANDOM_SEED)
 print("CUDA available:", torch.cuda.is_available())
 print("Device:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU")
 
+
+
+
+
 # ---------- Helpers ----------
 def load_gz_json(path):
     with gzip.open(path, "rt") as f:
@@ -117,6 +121,10 @@ def smape_per_dim(y_true, y_pred):
         dim_smapes.append(np.mean(s) * 100.0)  # percent
     return float(np.mean(dim_smapes))
 
+
+
+
+
 # ------------ Load data ------------
 train_eq = load_gz_json(input_train_path)
 test_eq  = load_gz_json(input_test_path)
@@ -139,6 +147,10 @@ else:
     if TARGET_ATTRACTOR not in train_eq:
         raise ValueError(f"{TARGET_ATTRACTOR} not found in training data")
     attractor_list = [TARGET_ATTRACTOR]
+
+
+
+
 
 # --------------- Optuna objective for TiDE ----------------
 def make_tide_objective(attractor_name, train_past, train_future, n_dims, timeout=None):
@@ -249,6 +261,10 @@ def make_tide_objective(attractor_name, train_past, train_future, n_dims, timeou
         return float(val_smape)
 
     return objective
+
+
+
+
 
 # ----------------- Main loop -----------------
 for attractor in attractor_list:
