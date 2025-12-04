@@ -359,7 +359,7 @@ for attractor in attractor_list:
             y_pred_comb = final_preds[0][:min_len]
     else:
         y_pred_comb = np.array([])
-
+        
     # Combined metrics (multivariate)
     try:
         y_true_comb = test_future[:len(y_pred_comb)]
