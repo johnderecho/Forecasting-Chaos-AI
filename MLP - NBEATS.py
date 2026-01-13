@@ -26,7 +26,7 @@ input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_
 input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
 output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\NBEATS.json"
 
-TARGET_ATTRACTOR = "Aizawa"
+TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
 
 LONG = True
