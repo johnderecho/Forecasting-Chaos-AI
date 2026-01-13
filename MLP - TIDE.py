@@ -25,14 +25,14 @@ input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_
 input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
 output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\results_optuna_tide.json"
 
-TARGET_ATTRACTOR = "Aizawa"
+TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
 
 LONG = True
-N_TRIALS = 1                    # Number of trials to run
+N_TRIALS = 50                    # Number of trials to run
 RANDOM_SEED = 42
 
-PRUNER = optuna.pruners.NopPruner()   # pruning disabled (safe)
+PRUNER = optuna.pruners.NopPruner()   # pruning disabled (safe) (why)z
 STORAGE = None
 # =========================================
 
