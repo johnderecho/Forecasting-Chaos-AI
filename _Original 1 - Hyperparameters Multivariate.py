@@ -60,7 +60,10 @@ pl_trainer_kwargs = [gpu_params]
 model_static_dict = {"pl_trainer_kwargs": pl_trainer_kwargs}
 
 dataname = os.path.splitext(os.path.basename(os.path.split(input_path)[-1]))[0]
-output_path = cwd + "/hyperparameters/hyperparameters_multivariate_" + dataname + ".json"
+# output_path = cwd + "/hyperparameters/hyperparameters_multivariate_" + dataname + ".json"
+output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\original_code_results\hyper.json"
+
+
 
 # --- INTEGRATED MODERN LOADING WAY ---
 try:
@@ -76,6 +79,9 @@ class DystsDataWrapper:
         self.dataset = data
 
 equation_data = DystsDataWrapper(raw_json_data)
+
+
+
 # -------------------------------------
 
 try:
@@ -86,16 +92,19 @@ except FileNotFoundError:
 
 parameter_candidates = dict()
 
-parameter_candidates["RNNModel"] = {
+parameter_candidates["NBEATSModel"] = {
     "input_chunk_length": network_inputs,
     "output_chunk_length": network_outputs,
-    "model": ["LSTM"],
-    "n_rnn_layers": [2],
-    "n_epochs": [200]
+    "n_epochs": [200],
+    "num_stacks": [10],
+    "num_blocks": [1],
+    "num_layers": [4],
+    "layer_widths": [256]
 }
 
 for equation_name in equation_data.dataset:
-    print(equation_name, flush=True)
+    if equation_name != "Lorenz":
+        continue
 
     train_data = np.copy(np.array(equation_data.dataset[equation_name]["values"]))
 
