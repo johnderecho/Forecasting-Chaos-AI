@@ -5,11 +5,11 @@ import os
 import json
 
 import dysts
-from dysts.datasets import *
-
+import gzip
 import numpy as np
 
 import darts
+import warnings
 from darts.models import *
 from darts import TimeSeries
 import darts.models
@@ -21,16 +21,20 @@ LONG = True
 
 cwd = os.path.dirname(os.path.realpath(__file__))
 # cwd = os.getcwd()
-input_path = os.path.dirname(cwd)  + "/dysts/data/test_multivariate__pts_per_period_100__periods_12.json.gz"
+
 
 if LONG:
-    input_path = os.path.dirname(cwd)  + "/dysts/data/test_multivariate__pts_per_period_100__periods_60.json.gz"
+    input_path = r"C:\Users\Windows\Desktop\Thesis - GPU\data\test_multivariate__pts_per_period_100__periods_60.json.gz"
+else:
+    input_path = r"C:\Users\Windows\Desktop\Thesis - GPU\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
+
+if not os.path.exists(input_path):
+    raise FileNotFoundError(f"Dataset not found: {input_path}")
 
 dataname = os.path.splitext(os.path.basename(os.path.split(input_path)[-1]))[0]
-output_path = cwd + "/results/results_" + dataname + "22.json"
+output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\original_code_results\result.json"
 dataname = dataname.replace("test", "train" )
-hyperparameter_path = cwd + "/hyperparameters/hyperparameters_multivariate_" + dataname + ".json"
-hyperparameter_path = cwd + "/hyperparameters/hyperparameters_multivariate_train_multivariate__pts_per_period_100__periods_12.json"
+hyperparameter_path = r"C:\Users\Windows\Desktop\Thesis - GPU\original_code_results\hyper.json"
 
 import torch
 has_gpu = torch.cuda.is_available()
@@ -54,7 +58,22 @@ pl_trainer_kwargs = [gpu_params]
 model_static_dict = {"pl_trainer_kwargs" : pl_trainer_kwargs}
 
 
-equation_data = load_file(input_path)
+# --- INTEGRATED MODERN LOADING WAY ---
+try:
+    with gzip.open(input_path, "rt", encoding="utf-8") as f:
+        raw_json_data = json.load(f)
+except (gzip.BadGzipFile, OSError):
+    # Fallback: If the file is NOT actually gzipped, load as normal text
+    with open(input_path, "r", encoding="utf-8") as f:
+        raw_json_data = json.load(f)
+
+class DystsDataWrapper:
+    def __init__(self, data):
+        self.dataset = data
+
+equation_data = DystsDataWrapper(raw_json_data)
+
+
 
 with open(hyperparameter_path, "r") as file:
     all_hyperparameters = json.load(file)
