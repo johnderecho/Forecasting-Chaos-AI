@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import torch
 import optuna
+import sys
 
 import dysts
 import dysts.metrics
@@ -20,17 +21,26 @@ import dysts.metrics
 from neuralforecast import NeuralForecast
 from neuralforecast.models import TiDE
 
+# CUDA Sanity Check
+print("python:", sys.version)
+print("exe:", sys.executable)
+print("torch:", torch.__version__)
+print("cuda build:", torch.version.cuda)
+print("is_available:", torch.cuda.is_available())
+
+
 # ================= CONFIG =================
-input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_multivariate__pts_per_period_100__periods_12.json.gz"
-input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
-output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\results_optuna_tide.json"
+input_train_path = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\data\train_multivariate__pts_per_period_100__periods_12.json.gz"   # use dynamic finder
+input_test_path  = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\data\test_multivariate__pts_per_period_100__periods_12.json.gz"    # use dynamic finder
+output_path = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\results\TIDE - Lorenz (Base - 1).json"
 
 TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
 
 LONG = True
-N_TRIALS = 50                    # Number of trials to run
+N_TRIALS = 1                    # Number of trials to run
 RANDOM_SEED = 42
+# torch.set_float32_matmul_precision('medium')     # enable for tensor core config (medium, high, highest) # Number of series to train on TSMixer_final
 
 PRUNER = optuna.pruners.NopPruner()   # pruning disabled (safe) (why)z
 STORAGE = None
