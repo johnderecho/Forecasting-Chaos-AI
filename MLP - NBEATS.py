@@ -11,7 +11,7 @@ from typing import Dict, Any
 
 import numpy as np
 import pandas as pd
-import torch
+import torch, sys
 import optuna
 
 import dysts
@@ -20,17 +20,27 @@ import dysts.metrics
 from neuralforecast import NeuralForecast
 from neuralforecast.models import NBEATS
 
+# CUDA Sanity Check
+print("python:", sys.version)
+print("exe:", sys.executable)
+print("torch:", torch.__version__)
+print("cuda build:", torch.version.cuda)
+print("is_available:", torch.cuda.is_available())
+
+
+
 # ================= CONFIG =================
-input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_multivariate__pts_per_period_100__periods_12.json.gz"
-input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
-output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\NBEATS.json"
+input_train_path = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\data\train_multivariate__pts_per_period_100__periods_12.json.gz"
+input_test_path  = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\data\test_multivariate__pts_per_period_100__periods_12.json.gz"
+output_path = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\results\NBEATS - Lorenz (TCHighest - 1).json"
 
 TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
 
 LONG = True
-N_TRIALS = 50                    # Number of trials to run
+N_TRIALS = 1                                        # Number of trials to run
 RANDOM_SEED = 42
+torch.set_float32_matmul_precision('highest')     # enable for tensor core config (medium, high, highest)
 
 PRUNER = optuna.pruners.NopPruner()   # pruning disabled (safe)
 STORAGE = None
