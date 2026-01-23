@@ -8,6 +8,7 @@ import inspect
 import time
 import warnings
 from typing import Dict, Any
+import sys
 
 import numpy as np
 import pandas as pd
@@ -20,18 +21,27 @@ import dysts.metrics
 from neuralforecast import NeuralForecast
 from neuralforecast.models import TSMixer
 
+
+# CUDA Sanity Check
+print("python:", sys.version)
+print("exe:", sys.executable)
+print("torch:", torch.__version__)
+print("cuda build:", torch.version.cuda)
+print("is_available:", torch.cuda.is_available())
+
 # ================= CONFIG =================
-input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_multivariate__pts_per_period_100__periods_12.json.gz"   # use dynamic finder
-input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"    # use dynamic finder
-output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\TSMixer.json"                                                 # use dynamic finder
+input_train_path = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\data\train_multivariate__pts_per_period_100__periods_12.json.gz"   # use dynamic finder
+input_test_path  = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\data\test_multivariate__pts_per_period_100__periods_12.json.gz"    # use dynamic finder
+output_path = r"C:\Users\Windows 11\Desktop\Thesis - Derecho\results\TSMixer - Lorenz (Base - 10).json"                               # use dynamic finder
 
 TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
 
 LONG = True
-N_TRIALS = 50                                                                                                              # Number of trials for hyperparameter optimization
+N_TRIALS = 10                                                                                                              # Number of trials for hyperparameter optimization
 RANDOM_SEED = 42
-n_series = 3                                                                                                               # Number of series to train on TSMixer_final
+n_series = 3
+# torch.set_float32_matmul_precision('medium')     # enable for tensor core config (medium, high, highest)# Number of series to train on TSMixer_final
 
 PRUNER = optuna.pruners.NopPruner()   # pruning disabled (safe)
 STORAGE = None
