@@ -18,7 +18,6 @@ import dysts
 import dysts.metrics
 
 from neuralforecast import NeuralForecast
-from neuralforecast.models import VanillaTransformer
 from neuralforecast.models import NBEATS
 
 # ================= CONFIG =================
@@ -64,7 +63,7 @@ def prepare_for_metrics(y_true, y_pred):
 
     return y_true[:n, :d], y_pred[:n, :d]
 
-def smape_per_dim(y_true, y_pred):
+def smape_per_dim(y_true, y_pred):                                                                                        # Calculates smape for each dimension x, y,and z
     eps = 1e-8
     smapes = []
     for d in range(y_true.shape[1]):
@@ -379,3 +378,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
