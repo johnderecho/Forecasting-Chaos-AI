@@ -24,7 +24,7 @@ from neuralforecast.models import DeepNPTS
 # ================= CONFIG =================
 input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_multivariate__pts_per_period_100__periods_12.json.gz"   # use dynamic finder
 input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"    # use dynamic finder
-output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\DeepNPTS Base - 10.json"                                                             # use dynamic finder
+output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\MLP DeepNPTS Base - 10.json"                                                             # use dynamic finder
 
 TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
