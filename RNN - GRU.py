@@ -18,12 +18,12 @@ import dysts
 import dysts.metrics
 
 from neuralforecast import NeuralForecast
-from neuralforecast.models import MLP
+from neuralforecast.models import GRU
 
 # ================= CONFIG =================
-input_train_path = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\train_multivariate__pts_per_period_100__periods_12.json.gz"   # use dynamic finder
-input_test_path  = r"C:\Users\Windows\Desktop\Derecho - Thesis\dysts\data\test_multivariate__pts_per_period_100__periods_12.json.gz"    # use dynamic finder
-output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\MLP Vanilla Base - 10.json"                                                             # use dynamic finder
+input_train_path = r"C:\Users\Windows\Desktop\Thesis - GPU\data\train_multivariate__pts_per_period_100__periods_12.json.gz"   # use dynamic finder
+input_test_path  = r"C:\Users\Windows\Desktop\Thesis - GPU\data\test_multivariate__pts_per_period_100__periods_12.json.gz"    # use dynamic finder
+output_path = r"C:\Users\Windows\Desktop\Thesis - GPU\results\RNN GRU Base - 1.json"                                                             # use dynamic finder
 
 TARGET_ATTRACTOR = "Lorenz"
 TRAIN_ALL = False
@@ -113,8 +113,8 @@ def make_objective(train_past, train_future, n_dims):
             "n_series": n_series
         }
 
-        # Filter only valid MLP args
-        sig = inspect.signature(MLP.__init__)
+        # Filter only valid GRU args
+        sig = inspect.signature(GRU.__init__)
         params = {k: v for k, v in params.items() if k in sig.parameters}
 
         # Build global dataframe
@@ -129,7 +129,7 @@ def make_objective(train_past, train_future, n_dims):
         df_train = pd.concat(dfs).reset_index(drop=True)
 
         try:
-            model = NeuralForecast(models=[MLP(**params)], freq=1)
+            model = NeuralForecast(models=[GRU(**params)], freq=1)
             model.fit(df_train)
             fcst = model.predict()
 
@@ -185,7 +185,7 @@ for attractor in attractors:
     study = optuna.create_study(
         direction="minimize",
         pruner=PRUNER,
-        study_name=f"MLP_{attractor}",
+        study_name=f"GRU_{attractor}",
         storage=STORAGE,
         load_if_exists=True
     )
@@ -225,7 +225,7 @@ for attractor in attractors:
         }))
     df_train = pd.concat(dfs).reset_index(drop=True)
 
-    model = NeuralForecast(models=[MLP(**best_params)], freq=1)
+    model = NeuralForecast(models=[GRU(**best_params)], freq=1)
     model.fit(df_train)
 
     fcst = model.predict()
@@ -242,7 +242,7 @@ for attractor in attractors:
 
     y_t, y_p = prepare_for_metrics(test_future, preds)
 
-    all_results[attractor]["MLP_final"] = {
+    all_results[attractor]["GRU_final"] = {
         "prediction": preds.tolist(),
         "metrics": dysts.metrics.compute_metrics(y_t, y_p),
         "best_params": best_params
@@ -302,7 +302,7 @@ def plot_phase_space_3d(y_true, y_pred=None, attractor_name=""):
     # Optional prediction
     if y_pred is not None:
         ax.plot(y_pred[:, 0], y_pred[:, 1], y_pred[:, 2],
-                label='MLP Prediction', color='crimson', alpha=0.9,
+                label='GRU Prediction', color='crimson', alpha=0.9,
                 linewidth=1.5, linestyle='--')
 
     ax.set_title(f"3D Phase Space: {attractor_name}", fontsize=14)
@@ -336,8 +336,8 @@ def main():
     for attractor_name, attractor_res in results.items():
         print(f"\nProcessing {attractor_name}...")
 
-        if "MLP_final" not in attractor_res:
-            print(f"  No 'MLP_final' for {attractor_name}, skipping.")
+        if "GRU_final" not in attractor_res:
+            print(f"  No 'GRU_final' for {attractor_name}, skipping.")
             continue
         if attractor_name not in data_json:
             print(f"  No ground truth for {attractor_name}, skipping.")
@@ -353,7 +353,7 @@ def main():
         y_true = full_series[split_point:]
 
         # Predictions
-        y_pred = np.array(attractor_res["MLP_final"]["prediction"])
+        y_pred = np.array(attractor_res["GRU_final"]["prediction"])
 
         if y_pred.size == 0:
             print(f"  Empty prediction for {attractor_name}, skipping.")
